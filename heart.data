@@ -1,4 +1,4 @@
-Age,Sex,Chest Pain,Blood Pressure,Serum Cholestoral,Fasting Blood Sugar High / Low,Resting EKG,Max Heart Rate,Exercise Induced Angina,ST Depression vs. Rest,Derivative of Peak Exercise ST,Vessels Colored by Fluoroscopy,Thal
+Age,Sex,ChestPain,BloodPressure,SerumCholestoral,FastingBloodSugar,RestingEKG,MaxHeartRate,ExerciseInducedAngina,STDepressionvsRest,DerivativeofPeakExerciseST,VesselsColoredbyFluoroscopy,Thal,HeartDisease
 c,n,n,c,c,n,n,c,n,c,n,c
 70.0,1.0,4.0,130.0,322.0,0.0,2.0,109.0,0.0,2.4,2.0,3.0,3.0,2
 67.0,0.0,3.0,115.0,564.0,0.0,2.0,160.0,0.0,1.6,2.0,0.0,7.0,1
