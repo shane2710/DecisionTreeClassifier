@@ -12,7 +12,9 @@ def import_dataset(path = "heart.data", index_col = 13):
     if os.path.exists("heart.data"):
         print("Dataset: {}\nFound: Locally".format(path))
         try:
-            df = pd.read_csv(path, header=0, index_col=index_col)
+            df = pd.read_csv(path, header=0, engine='python', index_col=index_col)
+            # note: engine selection as python is more stable on my machine
+            # using c gives random segfaults
         except IndexError as ind:
             print(ind)
             print("Index provided: {}".format(index_col))
