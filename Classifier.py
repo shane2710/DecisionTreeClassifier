@@ -18,11 +18,12 @@ def preprocess_heart_data(df):
 
     return new_df
 
-
 # import the dataset as a pandas dataframe
 df = DecisionTreeTools.import_dataset()
 
 # preprocess to add tag for continuous vs nominal
 parsed_df = preprocess_heart_data(df)
 
-print(parsed_df)
+features = list(parsed_df.columns.values)
+target = parsed_df.index.name
+
