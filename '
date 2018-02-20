@@ -47,11 +47,8 @@ def split(dataset, feature, threshold):
     # decide if continuous or nominal
     data_vec = list()
     if "{n}" in feature:   # nominal
-        feature_vals = dataset[feature].unique()        # obtain unique ft vals
-        feature_vals.sort()                             # sort in place
-        for val in feature_vals:
-            data_vec.append(dataset.loc[dataset[feature] == val])
-            #TODO: make sure this guarantees going in order (i think it does)
+        for n, val in enumerate(dataset[feature].unique()):
+            data_vec[n] = dataset.loc[dataset[feature] == val]
 
     else:               # continuous, use threshold split
         data_vec.append(dataset.loc[dataset[feature] < threshold])
