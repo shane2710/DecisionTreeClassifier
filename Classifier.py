@@ -16,7 +16,8 @@ def preprocess_heart_data(df):
     new_df = df.drop(df.index[0])
     new_df.columns = new_columns
 
-    return new_df
+    return new_df.apply(pd.to_numeric)  # convert strings to numbers
+
 
 # import the dataset as a pandas dataframe
 df = DecisionTreeTools.import_dataset()
@@ -26,4 +27,5 @@ parsed_df = preprocess_heart_data(df)
 
 features = list(parsed_df.columns.values)
 target = parsed_df.index.name
+
 
