@@ -51,6 +51,13 @@ def split(dataset, feature, threshold):
     if "{n}" in feature:   # nominal
         feature_vals = dataset[feature].unique()        # obtain unique ft vals
         feature_vals.sort()                             # sort in place
+
+        # if there's only one possible feature value, then this split won't
+        # actually do any 'splitting', so return None and try different split
+        if len(feature_vals) < 2:
+            return None
+
+        # otherwise, split up data based on value of given feature!
         for val in feature_vals:
             data_vec.append(dataset.loc[dataset[feature] == val])
             #TODO: make sure this guarantees going in order (i think it does)
@@ -61,13 +68,13 @@ def split(dataset, feature, threshold):
         if len(less):
             data_vec.append(less)
         else:
-            raise Exception(
-                    "Invalid split - one resulting subgroup!\nFeature: \
-                            {}\nThreshold: {}".format(feature, threshold))
+            return None
 
         greater_eq = dataset.loc[dataset[feature] >= threshold]
         if len(greater_eq):
             data_vec.append(greater_eq)
+        else:
+            return None
 
     return data_vec
 
@@ -160,7 +167,57 @@ def inform_gain(data_vec):
 # iterate through all possible splits on the dataset provided and return the
 # split with lowest information gain
 #
+# only input needed is the dataset to split
 #
-#
-#
+# output is the feature to split on, best threshold for cont. features, and a
+# data vector containing the split data
+def calc_best_split(dataset):
+    feature, threshold, inf_gain, data_vec = None, None, 100, list()
+    for col in dataset.columns:
+        if "{n}" in col:    # nominal feature
+            data_vec_temp = split(dataset, col, t)
+            if data_vec_temp == None:
+                continue
+
+            inf_gain_temp = inform_gain(data_vec_temp)
+            print("Feature: {}\nInf_Gain: {}\n\n".format(
+                feature, inf_gain_temp))
+
+            if inf_gain_temp < inf_gain:
+                inf_gain = inf_gain_temp
+                data_vec = data_vec_temp
+                feature = col
+                threshold = t
+            else:
+                continue
+
+        else:               # continuous feature
+            for t in dataset[col].unique():
+                data_vec_temp = split(dataset, col, t)
+                if data_vec_temp == None:
+                    continue
+
+                inf_gain_temp = inform_gain(data_vec_temp)
+                print("Feature: {}\nInf_Gain: {}\nSplit: {}\n\n".format(
+                    feature, inf_gain_temp, t))
+
+                if inf_gain_temp < inf_gain:
+                    inf_gain = inf_gain_temp
+                    data_vec = data_vec_temp
+                    feature = col
+                    threshold = t
+                else:
+                    continue
+
+    return feature, threshold, inf_gain, data_vec
+
+
+
+
+
+
+
+
+
+
 
