@@ -132,14 +132,14 @@ def inform_gain(data_vec):
         for val in [x for x in unique_target_vals if x in subframe.index]:
             val_freq = len([x for x in subframe.index == val if x == True])
             p = val_freq / subframe_size
-            print("p for {} = {}".format(val, p))     # debugging
+            #print("p for {} = {}".format(val, p))     # debugging
             conditional_prob += -p*math.log(p,2)
 
         conditional_entropy += subframe_prob*conditional_prob
 
         ## for debugging
-        print("Conditional Prob for Feature Val {}: {} ".format(
-            n, subframe_prob*conditional_prob))
+        #print("Conditional Prob for Feature Val {}: {} ".format(
+        #    n, subframe_prob*conditional_prob))
         ## end debugging
 
     # great!  now we have both the entropy of the whole dataset given and the
@@ -147,16 +147,16 @@ def inform_gain(data_vec):
     # conditional information gain is the difference of the two, so return:
     inform_gain = entropy - conditional_entropy
 
-    ##  more debugging-ugging
-    print("Unique target class values: {}".format(unique_target_vals))
-    for n,p in enumerate(p_target_vals):
-        print("Prob for class val {}: {}".format(unique_target_vals[n],p))
-    print("Entropy in data: {}".format(entropy))
+    ###  more debugging-ugging
+    #print("Unique target class values: {}".format(unique_target_vals))
+    #for n,p in enumerate(p_target_vals):
+    #    print("Prob for class val {}: {}".format(unique_target_vals[n],p))
+    #print("Entropy in data: {}".format(entropy))
 
-    print("Conditional Entropy: {}".format(conditional_entropy))
-    print("Information Gain given this feature and split: {}".format(
-                inform_gain))
-    ## end debugging
+    #print("Conditional Entropy: {}".format(conditional_entropy))
+    #print("Information Gain given this feature and split: {}".format(
+    #            inform_gain))
+    ### end debugging
 
     if (inform_gain >= 0):
         return inform_gain
@@ -172,18 +172,19 @@ def inform_gain(data_vec):
 # output is the feature to split on, best threshold for cont. features, and a
 # data vector containing the split data
 def calc_best_split(dataset):
-    feature, threshold, inf_gain, data_vec = None, None, 100, list()
+    feature, threshold, inf_gain, data_vec = None, None, 0, list()
     for col in dataset.columns:
+        #print(col)
         if "{n}" in col:    # nominal feature
             data_vec_temp = split(dataset, col, t)
             if data_vec_temp == None:
                 continue
 
             inf_gain_temp = inform_gain(data_vec_temp)
-            print("Feature: {}\nInf_Gain: {}\n\n".format(
-                feature, inf_gain_temp))
+            #print("Feature: {}\nInf_Gain: {}\n\n".format(
+                #feature, inf_gain_temp))
 
-            if inf_gain_temp < inf_gain:
+            if inf_gain_temp > inf_gain:
                 inf_gain = inf_gain_temp
                 data_vec = data_vec_temp
                 feature = col
@@ -198,10 +199,10 @@ def calc_best_split(dataset):
                     continue
 
                 inf_gain_temp = inform_gain(data_vec_temp)
-                print("Feature: {}\nInf_Gain: {}\nSplit: {}\n\n".format(
-                    feature, inf_gain_temp, t))
+                #print("Feature: {}\nInf_Gain: {}\nSplit: {}\n\n".format(
+                    #feature, inf_gain_temp, t))
 
-                if inf_gain_temp < inf_gain:
+                if inf_gain_temp > inf_gain:
                     inf_gain = inf_gain_temp
                     data_vec = data_vec_temp
                     feature = col
