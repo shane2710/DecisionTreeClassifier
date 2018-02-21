@@ -107,7 +107,9 @@ def inform_gain(data_vec):
         p_target_vals.append(target_val_freq[n] / sum(target_val_freq))
 
     if (p_target_vals[0] == 1):
-        raise Exception("Invalid Split: All data resides in one subgroup")
+        #raise Exception("Invalid Split: All data resides in one subgroup")
+        return 0        # this split was no good, doesn't actually split any
+                        # data, so return 0 - we gain nothing!
 
     # cool, so we have a vector of the probabilities for which each class occurs
 
@@ -189,7 +191,7 @@ def terminate_node(dataset):
 # output is dict: feature to split on, best threshold for cont. features, and a
 # data vector containing the split data
 def calc_best_split(dataset):
-    feature, threshold, inf_gain, data_vec = None, None, 0, None
+    feature, threshold, inf_gain, data_vec = None, np.array([0]), 0, None
     for col in dataset.columns:
         #print(col)
         if "{n}" in col:    # nominal feature
@@ -225,13 +227,13 @@ def calc_best_split(dataset):
                     inf_gain = inf_gain_temp
                     data_vec = data_vec_temp
                     feature = col
-                    threshold = t
+                    threshold[0] = t
                 else:
                     continue
 
-    if 'feature' == None:
+    if feature == None:
         # we didn't find a feature to split on, so this must be a terminal node
-        return None
+        return terminate_node(dataset)
     else:
         # otherwise this is the best split
         return {'feature':feature, 'value':threshold, 'data':data_vec}
@@ -245,18 +247,63 @@ def calc_best_split(dataset):
 # outputs are nothing, just add child_num:child_node key:val pairs to current
 # node and move the data along to those children
 def recursive_split(node, max_depth, min_size, current_depth):
+
+    print("Feature: {}\tValues: {}".format(node['feature'],
+            node['value']));
+    print("Data Len: {}".format(len(node['data'])))
+
     # move data from current node into temp list
-    children = list()
-    for child in node['data']:
-        children.append(child)
+    children_data = list()
+    for data in node['data']:
+        children_data.append(data)
 
     del(node['data'])
-    node['children'] = list()
 
+    # generate placeholder for vector of children nodes
+    num_children = len(children_data)
+    node['children'] = {}
+
+    print("Depth: {}\tChildren: {}".format(current_depth, num_children))
     # check for max depth of the tree
     if current_depth >= max_depth:
-        for child in children:
-            node['children'].append(terminate_node(child))
+        for n in range(num_children):
+            node['children'][node['value'][n]] = terminate_node(children_data[n])
+        return
+
+    # otherwise process each child
+    if len(node['value']) > 1:          # nominal feature
+        for child in range(num_children):
+            if len(children_data[child]) > min_size:
+                node['children'][node['value'][child]] = calc_best_split(
+                        children_data[child])
+                if type(node['children'][node['value'][child]]) == dict:
+                    recursive_split(node['children'][node['value'][child]],
+                            max_depth, min_size, current_depth+1)
+                else:
+                    return
+    else:
+        # continuous feature, process 'less' then 'greater'
+        if len(children_data[0]) > min_size:
+            node['children']['less'] = calc_best_split(children_data[0])
+            if type(node['children']['less']) == dict:  # got a valid node back
+                recursive_split(node['children']['less'],
+                        max_depth, min_size, current_depth+1)
+            else:           # must've been a terminal node
+                return
+        if len(children_data[0]) > min_size:
+            node['children']['greater'] = calc_best_split(children_data[1])
+            if type(node['children']['greater']) == dict:
+                recursive_split(node['children']['greater'],
+                        max_depth, min_size, current_depth+1)
+            else:           # must've been a terminal node
+                return
+
+    return
+
+    ## note: setup termination correctly, then name children nodes by their
+    # values if discrete.  probably need a switch statement for handling
+    # cont vs nom values differently through the above!
+    ### then, i think it's just processing each node in a loop, and good to go?
 
 
 
@@ -272,7 +319,7 @@ def build_decision_tree(dataset, max_depth, min_size):
     root = calc_best_split(dataset)
 
     # now call the recursive splitting function to construct the rest!
-    split(root, max_depth, min_size, 1)
+    recursive_split(root, max_depth, min_size, 1)
 
     return root
 
