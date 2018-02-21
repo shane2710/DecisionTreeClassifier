@@ -164,6 +164,26 @@ def inform_gain(data_vec):
         raise Exception("Something went wrong... Information Gain is negative")
 
 
+# process a terminal node once one of the terminal conditions is hit
+#
+# input is the dataset that exists at the current node
+#
+# output is the most likely class value
+def terminate_node(dataset):
+    likely_class = None
+    freq = 0
+    for class_val in dataset.index.unique():
+        if len([x for x in dataset.index == class_val if x == True]) > freq:
+            likely_class = class_val
+
+    return likely_class
+
+
+
+
+
+
+
 # iterate through all possible splits on the dataset provided and return the
 # split with lowest information gain
 #
