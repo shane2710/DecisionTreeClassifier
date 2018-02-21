@@ -60,6 +60,10 @@ def split(dataset, feature, threshold):
         less = dataset.loc[dataset[feature] < threshold]
         if len(less):
             data_vec.append(less)
+        else:
+            raise Exception(
+                    "Invalid split - one resulting subgroup!\nFeature: \
+                            {}\nThreshold: {}".format(feature, threshold))
 
         greater_eq = dataset.loc[dataset[feature] >= threshold]
         if len(greater_eq):
@@ -118,17 +122,17 @@ def inform_gain(data_vec):
         subframe_prob = subframe_size / total_rows
 
         conditional_prob = 0
-        for val in unique_target_vals:
+        for val in [x for x in unique_target_vals if x in subframe.index]:
             val_freq = len([x for x in subframe.index == val if x == True])
             p = val_freq / subframe_size
-            # print("p for {} = {}".format(val, p))     # debugging
+            print("p for {} = {}".format(val, p))     # debugging
             conditional_prob += -p*math.log(p,2)
 
         conditional_entropy += subframe_prob*conditional_prob
 
         ## for debugging
-        # print("Conditional Prob for Feature Val {}: {} ".format(
-            # n, subframe_prob*conditional_prob))
+        print("Conditional Prob for Feature Val {}: {} ".format(
+            n, subframe_prob*conditional_prob))
         ## end debugging
 
     # great!  now we have both the entropy of the whole dataset given and the
@@ -136,16 +140,16 @@ def inform_gain(data_vec):
     # conditional information gain is the difference of the two, so return:
     inform_gain = entropy - conditional_entropy
 
-    ###  more debugging-ugging
-    #print("Unique target class values: {}".format(unique_target_vals))
-    #for n,p in enumerate(p_target_vals):
-    #    print("Prob for class val {}: {}".format(unique_target_vals[n],p))
-    #print("Entropy in data: {}".format(entropy))
+    ##  more debugging-ugging
+    print("Unique target class values: {}".format(unique_target_vals))
+    for n,p in enumerate(p_target_vals):
+        print("Prob for class val {}: {}".format(unique_target_vals[n],p))
+    print("Entropy in data: {}".format(entropy))
 
-    #print("Conditional Entropy: {}".format(conditional_entropy))
-    #print("Information Gain given this feature and split: {}".format(
-    #            inform_gain))
-    ### end debugging
+    print("Conditional Entropy: {}".format(conditional_entropy))
+    print("Information Gain given this feature and split: {}".format(
+                inform_gain))
+    ## end debugging
 
     if (inform_gain >= 0):
         return inform_gain
