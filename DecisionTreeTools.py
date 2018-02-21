@@ -188,7 +188,7 @@ def calc_best_split(dataset):
                 inf_gain = inf_gain_temp
                 data_vec = data_vec_temp
                 feature = col
-                threshold = t
+                threshold = None
             else:
                 continue
 
@@ -210,7 +210,7 @@ def calc_best_split(dataset):
                 else:
                     continue
 
-    return feature, threshold, inf_gain, data_vec
+    return feature, threshold, data_vec
 
 
 
