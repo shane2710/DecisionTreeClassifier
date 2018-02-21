@@ -180,6 +180,8 @@ def terminate_node(dataset):
         if len([x for x in dataset.index == class_val if x == True]) > freq:
             likely_class = class_val
 
+    # note: ran into a small issue: when multiple class vals are the same
+    # frequency and are tied for first, always returns same val w/o warning
     return likely_class
 
 
@@ -292,6 +294,7 @@ def recursive_split(node, max_depth, min_size, current_depth):
                 node['children']['less'] = terminate_node(children_data[0])
         else:
             node['children']['less'] = terminate_node(children_data[0])
+
         if len(children_data[1]) > min_size:
             node['children']['greater'] = calc_best_split(children_data[1])
             if type(node['children']['greater']) == dict:

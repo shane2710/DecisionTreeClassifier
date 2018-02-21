@@ -25,7 +25,7 @@ df = DecisionTreeTools.import_dataset()
 parsed_df = preprocess_heart_data(df)
 
 # build decision tree
-tree_root = DecisionTreeTools.build_decision_tree(parsed_df, 25, 2)
+tree_root = DecisionTreeTools.build_decision_tree(parsed_df, 25, 25)
 
 DecisionTreeTools.print_tree(tree_root, 0)
 
