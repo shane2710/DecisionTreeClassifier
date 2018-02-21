@@ -45,7 +45,9 @@ def import_dataset(path = "heart.data", index_col = 13):
 # return a vector of the different data subsets as pandas DataFrames, indexed
 # in numerically increasing order based on the class value
 # (TODO: maybe index should == classval ?)
-def split(dataset, feature, threshold):
+# TODO: should have a more portable way of deciding nominal vs cont, maybe
+# threshold = None for nominal?
+def train_split(dataset, feature, threshold):
     # decide if continuous or nominal
     data_vec = list()
     if "{n}" in feature:   # nominal
@@ -179,24 +181,19 @@ def terminate_node(dataset):
     return likely_class
 
 
-
-
-
-
-
 # iterate through all possible splits on the dataset provided and return the
 # split with lowest information gain
 #
 # only input needed is the dataset to split
 #
-# output is the feature to split on, best threshold for cont. features, and a
+# output is dict: feature to split on, best threshold for cont. features, and a
 # data vector containing the split data
 def calc_best_split(dataset):
-    feature, threshold, inf_gain, data_vec = None, None, 0, list()
+    feature, threshold, inf_gain, data_vec = None, None, 0, None
     for col in dataset.columns:
         #print(col)
         if "{n}" in col:    # nominal feature
-            data_vec_temp = split(dataset, col, t)
+            data_vec_temp = train_split(dataset, col, t)
             if data_vec_temp == None:
                 continue
 
@@ -208,13 +205,15 @@ def calc_best_split(dataset):
                 inf_gain = inf_gain_temp
                 data_vec = data_vec_temp
                 feature = col
-                threshold = None
+                feature_vals = dataset[col].unique()
+                feature_vals.sort()
+                threshold = feature_vals
             else:
                 continue
 
         else:               # continuous feature
             for t in dataset[col].unique():
-                data_vec_temp = split(dataset, col, t)
+                data_vec_temp = train_split(dataset, col, t)
                 if data_vec_temp == None:
                     continue
 
@@ -230,10 +229,52 @@ def calc_best_split(dataset):
                 else:
                     continue
 
-    return feature, threshold, data_vec
+    if 'feature' == None:
+        # we didn't find a feature to split on, so this must be a terminal node
+        return None
+    else:
+        # otherwise this is the best split
+        return {'feature':feature, 'value':threshold, 'data':data_vec}
 
 
 
+# recursive splitting function used to split on them splits
+#
+# inputs are current tree depth, minimum data size, max depth, and current node
+#
+# outputs are nothing, just add child_num:child_node key:val pairs to current
+# node and move the data along to those children
+def recursive_split(node, max_depth, min_size, current_depth):
+    # move data from current node into temp list
+    children = list()
+    for child in node['data']:
+        children.append(child)
+
+    del(node['data'])
+    node['children'] = list()
+
+    # check for max depth of the tree
+    if current_depth >= max_depth:
+        for child in children:
+            node['children'].append(terminate_node(child))
+
+
+
+
+# it's time to build the tree!!!
+#
+# inputs include base dataset, max depth of tree, and minimum data size @ node
+#
+# output is the root node of the tree!
+def build_decision_tree(dataset, max_depth, min_size):
+
+    # first get root of tree
+    root = calc_best_split(dataset)
+
+    # now call the recursive splitting function to construct the rest!
+    split(root, max_depth, min_size, 1)
+
+    return root
 
 
 
