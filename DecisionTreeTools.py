@@ -1,6 +1,8 @@
 
 import pandas as pd
+import numpy as np
 import os
+import math
 import subprocess
 
 # import the dataset
@@ -40,8 +42,8 @@ def import_dataset(path = "heart.data", index_col = 13):
 # specify a threshold for continuous splits, recognized by {n} or {c} in the
 # feature name
 #
-# return a vector of the different data subsets, indexed in numerically
-# increasing order based on the class value
+# return a vector of the different data subsets as pandas DataFrames, indexed
+# in numerically increasing order based on the class value
 # (TODO: maybe index should == classval ?)
 def split(dataset, feature, threshold):
     # decide if continuous or nominal
@@ -54,19 +56,107 @@ def split(dataset, feature, threshold):
             #TODO: make sure this guarantees going in order (i think it does)
 
     else:               # continuous, use threshold split
-        data_vec.append(dataset.loc[dataset[feature] < threshold])
-        data_vec.append(dataset.loc[dataset[feature] >= threshold])
+        # the following ensures no empty dataframes are returned
+        less = dataset.loc[dataset[feature] < threshold]
+        if len(less):
+            data_vec.append(less)
+
+        greater_eq = dataset.loc[dataset[feature] >= threshold]
+        if len(greater_eq):
+            data_vec.append(greater_eq)
 
     return data_vec
 
 
 # calculate the information gain of a given split dataset
 #
-# data is given as a vector of pandas Series so that both continuous and
+# data is given as a vector of pandas DataFrames so that both continuous and
 # nominal data can be handled the same way
 #
-# also pass in the feature that was split on plz
-def inform_gain(data_vec, feature):
+# also pass in the feature that was split on?  maybe not for now...
+def inform_gain(data_vec):
+    # conditional information gain needs the data entropy and entropy given a
+    # certain feature value
+
+    # entropy needs the probabilities of each outcome value ocurring:
+    total_rows = 0.0
+    for subframe in data_vec:
+        total_rows += len(subframe.index)       # now total_rows = total # data
+
+    p_target_vals = list()
+    total_index = np.concatenate([(sub.index) for sub in data_vec])
+    unique_target_vals, target_val_freq = np.unique(total_index,
+            return_counts=True)
+
+    # at this point, unique_target vals has all possible class vals, and
+    # target_val_freq has the frequency each value occurs
+    for n in range(0,len(unique_target_vals)):
+        p_target_vals.append(target_val_freq[n] / sum(target_val_freq))
+
+    if (p_target_vals[0] == 1):
+        raise Exception("Invalid Split: All data resides in one subgroup")
+
+    # cool, so we have a vector of the probabilities for which each class occurs
+
+    # now calculate the entropy using sum(-P(y)log.2.(P(y)) for all vals
+    entropy = 0
+    for p in p_target_vals:
+        entropy += -(p)*math.log(p,2)
+
+    # cool, we have the entropy.  now let's find the conditional entropy and
+    # subtract this from the entropy to find the conditional information gain
+    # for splitting on this feature!
 
 
-    return ig_val
+    # conditional entropy requires the probability that a certain feature takes
+    # on each of its possible values and the conditional probability of the
+    # class value given that the feature takes on each value
+
+    conditional_entropy = 0
+    for n, subframe in enumerate(data_vec):
+        subframe_size = len(subframe.index)
+        subframe_prob = subframe_size / total_rows
+
+        conditional_prob = 0
+        for val in unique_target_vals:
+            val_freq = len([x for x in subframe.index == val if x == True])
+            p = val_freq / subframe_size
+            # print("p for {} = {}".format(val, p))     # debugging
+            conditional_prob += -p*math.log(p,2)
+
+        conditional_entropy += subframe_prob*conditional_prob
+
+        ## for debugging
+        # print("Conditional Prob for Feature Val {}: {} ".format(
+            # n, subframe_prob*conditional_prob))
+        ## end debugging
+
+    # great!  now we have both the entropy of the whole dataset given and the
+    # conditional entropy of the dataset given a certain feature value.  The
+    # conditional information gain is the difference of the two, so return:
+    inform_gain = entropy - conditional_entropy
+
+    ###  more debugging-ugging
+    #print("Unique target class values: {}".format(unique_target_vals))
+    #for n,p in enumerate(p_target_vals):
+    #    print("Prob for class val {}: {}".format(unique_target_vals[n],p))
+    #print("Entropy in data: {}".format(entropy))
+
+    #print("Conditional Entropy: {}".format(conditional_entropy))
+    #print("Information Gain given this feature and split: {}".format(
+    #            inform_gain))
+    ### end debugging
+
+    if (inform_gain >= 0):
+        return inform_gain
+    else:
+        raise Exception("Something went wrong... Information Gain is negative")
+
+
+# iterate through all possible splits on the dataset provided and return the
+# split with lowest information gain
+#
+#
+#
+#
+
