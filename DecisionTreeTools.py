@@ -248,9 +248,8 @@ def calc_best_split(dataset):
 # node and move the data along to those children
 def recursive_split(node, max_depth, min_size, current_depth):
 
-    print("Feature: {}\tValues: {}".format(node['feature'],
-            node['value']));
-    print("Data Len: {}".format(len(node['data'])))
+    print("Feature: {}\tValues: {}\tData Len: {}".format(node['feature'],
+            node['value'], len(node['data'])))
 
     # move data from current node into temp list
     children_data = list()
@@ -279,8 +278,9 @@ def recursive_split(node, max_depth, min_size, current_depth):
                 if type(node['children'][node['value'][child]]) == dict:
                     recursive_split(node['children'][node['value'][child]],
                             max_depth, min_size, current_depth+1)
-                else:
-                    return
+            else:
+                node['children'][node['value'][child]] = terminate_node(
+                        children_data[child])
     else:
         # continuous feature, process 'less' then 'greater'
         if len(children_data[0]) > min_size:
@@ -289,14 +289,18 @@ def recursive_split(node, max_depth, min_size, current_depth):
                 recursive_split(node['children']['less'],
                         max_depth, min_size, current_depth+1)
             else:           # must've been a terminal node
-                return
-        if len(children_data[0]) > min_size:
+                node['children']['less'] = terminate_node(children_data[0])
+        else:
+            node['children']['less'] = terminate_node(children_data[0])
+        if len(children_data[1]) > min_size:
             node['children']['greater'] = calc_best_split(children_data[1])
             if type(node['children']['greater']) == dict:
                 recursive_split(node['children']['greater'],
                         max_depth, min_size, current_depth+1)
             else:           # must've been a terminal node
-                return
+                node['children']['greater'] = terminate_node(children_data[1])
+        else:
+            node['children']['greater'] = terminate_node(children_data[1])
 
     return
 
@@ -324,6 +328,26 @@ def build_decision_tree(dataset, max_depth, min_size):
     return root
 
 
+
+# print out the tree for visualizationz!
+#
+# inputs are starting node for visualizing and the depth
+#
+# returns nothing but outputs a cool indented hierarchy of nodes on terminal!
+def print_tree(node, depth):
+    if isinstance(node, dict):
+        if "{n}" in node['feature']:        # nominal feature
+            for n,child in enumerate(node['children']):
+                print('%s[%s = %.3f]' % ((depth*' ',
+                    (node['feature']),node['value'][n])))
+                print_tree(node['children'][child], depth+1)
+        else:                               # continuous feature
+            print('%s[%s < %.3f]' % ((depth*' ',
+                (node['feature']),node['value'][0])))
+            for child in node['children']:
+                print_tree(node['children'][child], depth+1)
+    else:
+        print('%s[%s]' % ((depth*' ', node)))
 
 
 
