@@ -1,15 +1,15 @@
-#Decision Tree Machine Learning Classifier
+# Decision Tree Machine Learning Classifier
 
-##Implementation of a greedy Decision Tree Classifier from scratch using pandas for efficient data handling, multi-way splits on discrete feature sets, and maximization of an information gain cost function for optimization.
+## Implementation of a greedy Decision Tree Classifier from scratch using pandas for efficient data handling, multi-way splits on discrete feature sets, and maximization of an information gain cost function for optimization.
 
 This project was built using 'heart.data' included in the above repository,
 which contains example medical information on patients who do or do not have
 heart disease.  The trained classifier is able to identify new data inputs as
 either positive or negative for heart disease presence.
 
-##Example output of a trained tree with a minimum of 25 data points at each split:
+## Example output of a trained tree with a minimum of 25 data points at each split:
 
-"""
+'''
 [Thal {n} = 3.000]
  [ChestPain {n} = 1.000]
   [1.0]
@@ -45,4 +45,4 @@ either positive or negative for heart disease presence.
   [STDepressionvsRest {c} < 0.800]
    [2.0]
    [1.0]
-"""
+'''
