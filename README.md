@@ -9,7 +9,7 @@ either positive or negative for heart disease presence.
 
 ## Example output of a trained tree with a minimum of 25 data points at each split:
 
-'''
+```
 [Thal {n} = 3.000]
  [ChestPain {n} = 1.000]
   [1.0]
@@ -45,4 +45,4 @@ either positive or negative for heart disease presence.
   [STDepressionvsRest {c} < 0.800]
    [2.0]
    [1.0]
-'''
+```
