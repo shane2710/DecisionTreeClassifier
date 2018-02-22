@@ -27,5 +27,9 @@ parsed_df = preprocess_heart_data(df)
 # build decision tree
 tree_root = DecisionTreeTools.build_decision_tree(parsed_df, 25, 25)
 
+# print out the tree
 DecisionTreeTools.print_tree(tree_root, 0)
+
+## TODO: separate data into 80% training and 20% testing, then evaluate
+# performance of this algorithm
 
